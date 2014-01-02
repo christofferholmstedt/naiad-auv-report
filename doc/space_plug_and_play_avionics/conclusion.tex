@@ -1,42 +1,40 @@
 % Do NOT change this "Section" title
 % and do NOT add more "Section" level titles.
 \section{Conclusion}\label{sec:conclusion}
-Due to limitations presented in this report Space plug-and-play Avionics (SPA) have
+Due to limitations presented in this report, Space plug-and-play Avionics (SPA) have
 not been used in the final AUV. The following two sections show how to continue
 with the combination of SPA/VPPN, CAN Bus and Ada.
 
 \subsection{Virtual Plug-and-Play Network}
 \subsubsection{VPPN and CAN}
 In section \ref{subsubsec:vppn_can_bus} the problem with too few bits
-available to work with when it comes to address resolution was presented.
-Alternative solutions not explored could be to store a part of the unique
+available to work with, when it comes to address resolution, was presented.
+Alternative solutions, not explored in this paper, could be to store a part of the unique
 addresses in the CAN Bus Message ID and the rest in the payload. A second
-alternative would be to use a randomly generated identifier and with math
-prove the unlikelihood of a CAN Bus collission.
+alternative would be to use a randomly generated identifier and mathematically
+prove the likelihood of a CAN Bus collision.
 
 Suggested work for the future is to tackle the problem starting from the now
 expired IETF draft presented by Cach and Fiedler \cite{web:draft-ip_over_can}.
 The benefit of this solution is a
 smaller prioritisation field which make it possible to use more bits for
-addressing during the address resolution phase. Though worth remembering is
-that the solution presented by Cach and Fiedler is not designed for systems
-with hard real-time requirements.
+addressing during the address resolution phase. Worth remembering though, is
+that it was not designed for systems with hard real-time requirements.
 
 \subsubsection{VPPN and Ada}
 The main lesson learned during development of the minimal implementation
-presented in this report was the lack of VPPN infrastructure
-components to test with. Most notable the Central Addressing Service (CAS) and the
-Lookup Service (LS). If UDP/IP were used previous implementation in C/C++ could be
-used as drivers/stubs while developing the needed infrastructure in Ada. As
-this is not the case most reasonable approach to implement VPPN in Ada would
-be to start with one local subnet within one single processing unit.
-
-First step would be to implement the CAS, the LS and the Local Subnet Manager (SM-L).
-After that a test service provider and test application could be implemented
+presented in this report, was the lack of VPPN infrastructure
+components to test with, most notable the Central Addressing Service (CAS) and the
+Lookup Service (LS). If UDP/IP was used, previous implementation in C/C++ could have been
+used as drivers/stubs, while developing the needed infrastructure in Ada. As
+this is not the case, the most reasonable approach to implement VPPN in Ada would
+be to start with one local subnet within one single processing unit. The first step
+would be to implement the CAS, the LS and the Local Subnet Manager (SM-L).
+After that, a test service provider and test application could be implemented
 within the same subnet before moving on with VPPN Gateways to other subnets.
 
-The reason for implementing the CAS, LS and SM-L in one go is
-that without CAS the SM-L can't give out new addresses on the local subnet and
+The reason for implementing the CAS, the LS and the SM-L in one go is
+that, without CAS the SM-L can't give out new addresses on the local subnet, and
 without the SM-L the CAS can't be connected to the local subnet (without
 hardcoding address information). The LS is then needed before adding
 applications and service providers so the VPPN network can handle actual data.

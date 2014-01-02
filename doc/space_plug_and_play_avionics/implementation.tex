@@ -1,7 +1,7 @@
 \section{Implementation}\label{sec:implementation}
 \subsection{Virtual Plug-and-Play Network}
 \subsubsection{Design}
-The goal with the first implementation was to test the capabilities of VPPN.
+The goal of the first implementation was to test the capabilities of VPPN.
 This included basic infrastructure such as a Lookup Service, a CAN Bus
 gateway, an application (a consumer of data) and a service provider. Figure
 \ref{fig:vppn-overview} shows the basic components needed and how they are
@@ -13,7 +13,7 @@ interconnected in suggested minimal implementation.
     \label{fig:vppn-overview}
 \end{figure}
 
-Each component's responsibility is described in the following list and an
+The responsibility of each component is described in the following list and an
 example connecting all components together is presented after that.
 \begin{itemize}
     \item {\em Lookup Service (LS)} keeps track of all connected components
@@ -21,42 +21,28 @@ example connecting all components together is presented after that.
     \item {\em Application (consumer)} uses data supplied by the service
         provider.
     \item {\em Service Provider} could be a sensor of some kind that
-        applications can subsribe to for reguarly updates of the sensor value.
+        applications can subscribe to for regularly updates of the sensor value.
     \item {\em VPPN-CAN Gateway} routes traffic from the local subnet in the
         processing unit to the CAN Bus local subnet.
 \end{itemize}
 
-In a fully operational VPPN network adress resolution and initial
-configuration is partly done by other components not used in this minimal
-design, for the minimal implementation hardcoded settings were planned instead.
+In a fully operational VPPN, address resolution and initial
+configuration is partly done by other components, not used in this simplified design. Hardcoded settings were used instead.
 
-After initial configuration each component sends information to the
-Lookup Service when requested in the format of "Extensible Transducer Electronic Data Sheets"
-(xTEDS) which is a XML file with a predefined structure. This file includes
-respective components interfaces and must be created when the component is
-constructed (it should be stored together with the component it describes).
+After the initial configuration each component sends information to the Lookup Service (when requested), in the format of "Extensible Transducer Electronic Data Sheets" (xTEDS) which is a XML file with a predefined structure. This file includes respective components interfaces and must be created when the component is constructed (it should be stored together with the component it describes).
 
-The Lookup Service then goes through all xTEDS to find out which components
-require information from other components. The Lookup Service in the minimal
-implementation would find that the "Application" requires sensor information of
-the same type the "Service Provider" supply. The Lookup Service would then report
-back to the Application with information that the Application should contact
-the Service Provider. The Application would then ask ones for required data or
-subscribe to the Service Provider's sensor information in a peer to peer manner.
+The Lookup Service then goes through all xTEDS to find out which components require information from other components. For example, an Application component might request sensor information of a certain type, and a Service Provider component can supply this type. The Lookup Service would then report back to the Application with all the necessary information required to contact the Service Provider. The Application can then request data just once, or subscribe to the Service Provider sensor information in a peer to peer manner.
 
-Whenever the Service Provider on the CAN Bus subnet were to communicate
-with another component outside of the CAN Bus subnet the VPPN-CAN Gateway
-would route the traffic. To be able to do this routing the VPPN-CAN Gateway is also
-responsible for the adress resolution in the boot up phase for the CAN Bus
-subnet.
+Whenever a Service Provider component on the CAN Bus subnet needs to communicate
+with another component outside of the CAN Bus subnet, the VPPN-CAN Gateway routes the traffic between the networks. To be able to do this routing the VPPN-CAN Gateway is also responsible for the address resolution in the boot up phase for the CAN Bus subnet.
 
 \subsubsection{VPPN and CAN Bus}\label{subsubsec:vppn_can_bus}
-In the minimal design the VPPN-CAN Gateway component runs on the same
+In the minimal design, the VPPN-CAN Gateway component runs on the same
 processing unit as the Mission Control System and connects with other
 components on that local subnet through UDP/IP through the loopback interface.
 
 In a VPPN network each component, both hardware and software, must have a unique
-logical address. When starting the system the responsiblity of the VPPN-CAN Gateway is to
+logical address. When starting the system, the responsibility of the VPPN-CAN Gateway is to
 enumerate the CAN Bus for all connected components and assign a local subnet address to
 each one. This contradicts the behaviour of the CAN Bus which is message based
 and not address based. As per request from the customer the project went
@@ -64,23 +50,21 @@ forward with the minimal implementation design without putting any attention to
 the contradiction.
 
 The main issue to solve is the assignment of addresses. In IP networks and VPPN Local
-Subnets a common address is used to make the network manager aware of the newly
-connected component. For IP networks newly connected network devices send a
+Subnets, a common address is used to make the network manager aware of the newly
+connected component. For IP networks, a newly connected network device sends a
 broadcast message to all other devices on the same local network with it's own
 address as 0.0.0.0 (IPv4). The DHCP server then replies with a response that
 includes a new IP address the device can use. In the SPA Local Subnet
-Adaptation Draft newly started processes sends a message to the loopback
+Adaptation Draft, newly a started process sends a message to the loopback
 interface at port 3500 requesting an address. Together with the request for a
-new address a unique identifier is included in the message (e.g. MAC Address
+new address, a unique identifier is included in the message (e.g. MAC Address
 for IPv4 networks).
 
-Applying the same behaviour to the CAN Bus would cause the CAN Bus to
+Applying the same behaviour to the CAN Bus would cause it to
 malfunction due to collision errors when multiple CAN hosts transmit the same
 message ID but with different payloads (including the unique identifier).
-This is related to the bootstraping problem others have tried to solve with
-"IP over CAN" \cite{web:draft-ip_over_can, web:porting_ip_can}.
-
-For the minimal implementation the project went forward with inspiration from
+This is related to the bootstrapping problem others have tried to solve with
+"IP over CAN" \cite{web:draft-ip_over_can, web:porting_ip_can}. The implementation presented in this document, got inspiration from
 Ditze et. al \cite{web:porting_ip_can} where the 29 bits message ID from the
 CAN Bus 2.0B specification is divided into different subparts. Starts with a 10
 bits prioritisation band, 3 bits message type field, 8 bits sender address and
@@ -98,8 +82,8 @@ the last 8 bits represent destination address. This can be seen in table
     \end{tabular}
 \end{table}
 
-To eliminate the problem with collisions on the CAN Bus unique component
-identifiers must be used within the message id. One solution explored was to
+To eliminate the problem of collisions on the CAN Bus, unique component
+identifiers must be used within the message id. One solution explored, was to
 define a message type as "DHCP" request and use both the sender and destination
 address as a 16 bits unique data field. 16 bits is not enough for MAC addresses
 used in IPv4 devices (48 bits), unique identifiers in IPv6 devices (64 bits)
@@ -107,14 +91,12 @@ nor the 128 bits CUUID used within VPPN. At this point no further work took
 place regarding this topic.
 
 \subsubsection{VPPN and Ada}
-During the initial implementation phase focus was put on Ada functionality and
+During the initial implementation phase, focus was put on Ada functionality and
 getting the communication between software components working. UDP/IP and TCP/IP
 were tested and it was clear early on that UDP/IP wouldn't work very well so
 the project continued with testing TCP/IP together with Ada Tasks more
-thoroughly. It was during a meeting with the customer at this point in the
-project the customer made clear that sockets were a no-go. TCP/IP communication
-was dropped in favour of "Protected Objects" from the Ada language for
-inter-process communication.
+thoroughly. However, during a meeting with the customer, it was made clear that sockets were a no-go. TCP/IP communication
+was dropped in favour of "Protected Objects" from the Ada language for inter-process communication.
 
 At this point it was decided to drop VPPN from the project, prioritising other
 requirements from the customer.
